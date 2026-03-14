@@ -1,6 +1,8 @@
 # FL Studio Project Browser
 
-A local web app that displays all your FL Studio projects on a draggable whiteboard. Tag projects by colour, write notes, rate them, and open them directly in FL Studio — all from your browser.
+![screenshot](screenshot.png)
+
+A local web app that displays all your FL Studio projects on a draggable whiteboard. Tag projects by colour, write notes, rate them, and open them directly in FL Studio, all from your browser.
 
 ---
 
@@ -31,7 +33,7 @@ A local web app that displays all your FL Studio projects on a draggable whitebo
    ./run.sh
    ```
 
-The first time you run it, the script automatically creates a virtual environment and installs dependencies. After that it starts up instantly.
+The first time you run it, the script automatically creates a Python virtual environment (so it doesn't mess up your global packages!) and installs dependencies. After that it starts up instantly.
 
 Your browser will open automatically at `http://localhost:8765`.
 
@@ -48,7 +50,7 @@ Your browser will open automatically at `http://localhost:8765`.
    run.bat
    ```
 
-The first time you run it, the script automatically creates a virtual environment and installs dependencies. After that it starts up instantly.
+The first time you run it, the script automatically creates a Python virtual environment (so it doesn't mess up your global packages!) and installs dependencies. After that it starts up instantly.
 
 Your browser will open automatically at `http://localhost:8765`.
 
@@ -56,31 +58,49 @@ Your browser will open automatically at `http://localhost:8765`.
 
 ---
 
+## Configuration
+
+When you open the app for the first time, a setup screen will appear asking you to point it at your FL Studio Projects folder.
+
+- Click **Browse…** to open a native folder picker (macOS Finder / Windows Explorer)
+- Or type / paste the path directly into the text box
+- Click **Open Browser** to save and load your projects
+
+The path is stored in `data.json` and remembered on every subsequent launch. To point the app at a different folder later, click **📁 Change Folder** in the header at any time.
+
+---
+
 ## Features
 
 | Feature | How to use |
 |---|---|
-| **View projects** | All FL Studio project folders appear as cards on the board |
-| **Open in FL Studio** | Click a card → click **Open in FL Studio** |
-| **Drag cards** | Click and drag any card to reposition it on the board |
-| **Colour tag** | Click a card → pick a colour dot |
-| **Star rating** | Click a card → click the stars (0–5) |
-| **Notes** | Click a card → type in the Notes box (auto-saves) |
-| **Sticky notes** | Click **＋ Sticky Note** in the header to place a free note on the board |
+| **Easily view all projects** | All FL Studio project folders appear as cards on the board, arrange them however you like! |
+| **Open in FL Studio** | Click a project → click **Open in FL Studio** |
+| **Colour tag** | Click a card → pick a colour (for organising for purpose/genres/anything) |
+| **Star rating** | Is it a flop or an upcoming hit? You decide! |
+| **Notes** | Write a note for each project (auto-saves) |
+| **Sticky notes** | For further organization |
 | **Hide a project** | Click a card → **Hide from project browser** at the bottom |
-| **Show hidden** | Click **Show Hidden** in the header to reveal hidden projects |
+| **Show hidden** | Click **Show Hidden** in the header to reveal hidden projects (and bring back any you no longer want hidden) |
 | **Search** | Type in the search box to filter cards by name |
-| **Reset layout** | Click **Reset Layout** to snap all cards back to a grid |
+| **Reset layout** | Click **Reset Layout** to snap all cards back to the default grid|
+| **Change folder** | Click **📁 Change Folder** in the header to pick a different projects directory |
 | **Light/dark mode** | Click the 🌙/☀️ button in the top-right corner |
 
 ---
 
 ## Data & Privacy
 
-Your ratings, notes, colours, and card positions are saved locally in `data.json` in the project folder. This file is excluded from git (via `.gitignore`) so your personal data is never committed or shared.
+Your project file metadata, ratings, notes, colours, and card positions are saved locally in `data.json` in the project folder. This file is excluded from git (via `.gitignore`) so your personal data is never committed or shared in case you cloned this repo. I don't (and have absolutely no way to) recieve any data from your projects.
 
 ---
 
 ## Stopping the app
 
-Go back to the terminal / command prompt and press `Ctrl + C`.
+Go back to the terminal / command prompt and press `Ctrl + C`, or simply close it.
+
+---
+
+## Acknowledgement
+
+This was vibecoded and tested in the span of 30 minutes using Claude Code. This code is open source under the [GNU General Public License v3](LICENSE).

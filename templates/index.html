@@ -463,6 +463,102 @@
     #hide-btn:hover { color: #e74c3c; border-color: #e74c3c; }
     #hide-btn.unhide:hover { color: var(--accent); border-color: var(--accent); }
 
+    /* ── Setup screen ─────────────────────────────────────── */
+    #setup-screen {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--bg);
+      z-index: 600;
+      align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    #setup-screen.open { display: flex; }
+
+    #setup-card {
+      background: var(--bg-modal);
+      border: 1px solid var(--border-modal);
+      border-radius: 16px;
+      width: 520px;
+      padding: 40px 40px 36px;
+      animation: popIn 0.2s ease;
+    }
+
+    #setup-card .setup-emoji {
+      font-size: 40px;
+      display: block;
+      margin-bottom: 18px;
+    }
+
+    #setup-card h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-modal-title);
+      margin-bottom: 8px;
+    }
+
+    #setup-card p {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.55;
+      margin-bottom: 28px;
+    }
+
+    .setup-label {
+      font-size: 10px; font-weight: 700; color: var(--text-label);
+      text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;
+    }
+
+    #setup-path-row {
+      display: flex; gap: 8px; margin-bottom: 8px;
+    }
+
+    #setup-path {
+      flex: 1;
+      background: var(--bg-input-deep);
+      border: 1px solid var(--border-input);
+      border-radius: 7px;
+      color: var(--text-input);
+      padding: 9px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s, background 0.2s;
+    }
+    #setup-path:focus { border-color: var(--accent); }
+
+    #setup-browse-btn {
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: 7px;
+      color: var(--text);
+      font-size: 13px;
+      padding: 0 14px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    #setup-browse-btn:hover { border-color: var(--accent); }
+
+    #setup-path-hint {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+      min-height: 16px;
+    }
+    #setup-path-hint.error { color: #e74c3c; }
+    #setup-path-hint.ok    { color: #2ecc71; }
+
+    #setup-save-btn {
+      width: 100%; padding: 13px;
+      background: var(--accent); color: #fff;
+      border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    #setup-save-btn:hover { background: #ff7f1f; }
+    #setup-save-btn:active { transform: scale(0.98); }
+    #setup-save-btn:disabled { background: var(--open-disabled-bg); color: var(--open-disabled-color); cursor: not-allowed; transform: none; }
+
     /* Toast */
     #toast {
       position: fixed; bottom: 28px; left: 50%;
@@ -484,12 +580,32 @@
   <button class="hdr-btn" onclick="addSticky()">＋ Sticky Note</button>
   <button class="hdr-btn" id="show-hidden-btn" onclick="toggleShowHidden()">Show Hidden</button>
   <button class="hdr-btn" onclick="resetLayout()">Reset Layout</button>
+  <button class="hdr-btn" onclick="openSetup()" title="Change projects folder">📁 Change Folder</button>
   <span id="project-count"></span>
   <button id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
 </div>
 
 <div id="canvas-wrap">
   <div id="canvas"></div>
+</div>
+
+<!-- Setup screen -->
+<div id="setup-screen">
+  <div id="setup-card">
+    <span class="setup-emoji">🎹</span>
+    <h2>welcome to fl studio project browser</h2>
+    <p>To get started, point the app at your FL Studio Projects folder.<br>
+       The default location is pre-filled below — just click <strong>Open Browser</strong> if that looks right.</p>
+
+    <div class="setup-label">Projects Folder</div>
+    <div id="setup-path-row">
+      <input id="setup-path" type="text" placeholder="Path to your FL Studio Projects folder…" oninput="onSetupPathInput()">
+      <button id="setup-browse-btn" onclick="browseFolder()">Browse…</button>
+    </div>
+    <div id="setup-path-hint"></div>
+
+    <button id="setup-save-btn" onclick="saveFolder()" disabled>Open Browser</button>
+  </div>
 </div>
 
 <!-- Modal -->
@@ -576,12 +692,99 @@
   // ── Init ───────────────────────────────────────────────────
   async function init() {
     applyTheme(localStorage.getItem('theme') || 'dark');
+
+    const config = await fetch('/api/config').then(r => r.json());
+    if (!config.is_configured) {
+      openSetup(config.default_dir);
+      return;
+    }
+
+    await loadProjects();
+  }
+
+  async function loadProjects() {
     [projects, metadata] = await Promise.all([
       fetch('/api/projects').then(r => r.json()),
       fetch('/api/metadata').then(r => r.json()),
     ]);
     renderCanvas();
     updateCount();
+  }
+
+  // ── Setup screen ────────────────────────────────────────────
+  function openSetup(prefillPath) {
+    const pathEl = document.getElementById('setup-path');
+    if (prefillPath) pathEl.value = prefillPath;
+    onSetupPathInput();
+    document.getElementById('setup-screen').classList.add('open');
+  }
+
+  function closeSetup() {
+    document.getElementById('setup-screen').classList.remove('open');
+  }
+
+  function onSetupPathInput() {
+    const val = document.getElementById('setup-path').value.trim();
+    const hint = document.getElementById('setup-path-hint');
+    const btn  = document.getElementById('setup-save-btn');
+    if (!val) {
+      hint.textContent = '';
+      hint.className = '';
+      btn.disabled = true;
+      return;
+    }
+    // Optimistic — server will validate on save
+    hint.textContent = val;
+    hint.className = '';
+    btn.disabled = false;
+  }
+
+  async function browseFolder() {
+    const btn = document.getElementById('setup-browse-btn');
+    btn.textContent = 'Opening…';
+    btn.disabled = true;
+    try {
+      const r = await fetch('/api/browse', { method: 'POST' });
+      const data = await r.json();
+      if (data.path) {
+        document.getElementById('setup-path').value = data.path;
+        onSetupPathInput();
+      } else {
+        // User cancelled — that's fine
+      }
+    } catch (e) {
+      toast('Could not open folder picker');
+    } finally {
+      btn.textContent = 'Browse…';
+      btn.disabled = false;
+    }
+  }
+
+  async function saveFolder() {
+    const path = document.getElementById('setup-path').value.trim();
+    const hint = document.getElementById('setup-path-hint');
+    const btn  = document.getElementById('setup-save-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+
+    const r = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projects_dir: path }),
+    });
+    const data = await r.json();
+
+    if (r.ok) {
+      hint.textContent = '✓ Folder saved';
+      hint.className = 'ok';
+      closeSetup();
+      await loadProjects();
+    } else {
+      hint.textContent = data.error || 'Invalid folder path';
+      hint.className = 'error';
+      btn.disabled = false;
+      btn.textContent = 'Open Browser';
+    }
   }
 
   // ── Metadata ───────────────────────────────────────────────
