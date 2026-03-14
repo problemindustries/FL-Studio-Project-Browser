@@ -1,0 +1,14 @@
+# User data — do not commit
+data.json
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
