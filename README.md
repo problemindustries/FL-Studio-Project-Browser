@@ -1,41 +1,40 @@
-# FL Studio Project Browser
+# DAW Project Browser
 
 ![screenshot](screenshot.png)
 
-A local web app that displays all your FL Studio projects on a draggable whiteboard. Tag projects by colour, write notes, rate them, and open them directly in FL Studio, all from your browser.
+A local app that displays all your DAW projects on a draggable whiteboard. Tag projects by colour, write notes, rate them, and open them directly in your DAW — all from a standalone desktop window.
+
+Supports **FL Studio** (`.flp`) and **Ableton Live** (`.als`).
+
+GitHub: [github.com/problemindustries/DAW-Project-Browser](https://github.com/problemindustries/DAW-Project-Browser)
 
 ---
 
 ## Requirements
 
 - **Python 3.8 or later** — [download here](https://www.python.org/downloads/)
-- **FL Studio** installed with projects saved in the default location:
-  - macOS: `~/Documents/Image-Line/FL Studio/Projects`
-  - Windows: `Documents\Image-Line\FL Studio\Projects`
+- **FL Studio** or **Ableton Live** installed, with projects saved somewhere on your machine
 
 ---
 
-## Setup & Running
+## Running from source
 
 ### macOS
 
-1. Open Terminal
-2. Navigate to the project folder:
+1. Open Terminal and navigate to the project folder:
    ```bash
-   cd path/to/fl-studio-project-browser
+   cd path/to/DAW-Project-Browser
    ```
-3. Make the run script executable (first time only):
+2. Make the run script executable (first time only):
    ```bash
    chmod +x run.sh
    ```
-4. Run the app:
+3. Run the app:
    ```bash
    ./run.sh
    ```
 
-The first time you run it, the script automatically creates a Python virtual environment (so it doesn't mess up your global packages!) and installs dependencies. After that it starts up instantly.
-
-Your browser will open automatically at `http://localhost:8765`.
+The first time you run it, the script automatically creates a Python virtual environment and installs dependencies. After that it starts up instantly.
 
 ---
 
@@ -46,27 +45,39 @@ Your browser will open automatically at `http://localhost:8765`.
 
    Or from Command Prompt:
    ```cmd
-   cd path\to\fl-studio-project-browser
+   cd path\to\DAW-Project-Browser
    run.bat
    ```
 
-The first time you run it, the script automatically creates a Python virtual environment (so it doesn't mess up your global packages!) and installs dependencies. After that it starts up instantly.
-
-Your browser will open automatically at `http://localhost:8765`.
-
-> **Note:** If Python isn't recognised, make sure you checked "Add Python to PATH" during installation. Re-run the Python installer and enable that option if needed.
+> **Note:** If Python isn't recognised, make sure you checked "Add Python to PATH" during installation.
 
 ---
 
-## Configuration
+## Building a standalone executable
 
-When you open the app for the first time, a setup screen will appear asking you to point it at your FL Studio Projects folder.
+To build a native `.app` (macOS) or `.exe` (Windows):
 
-- Click **Browse…** to open a native folder picker (macOS Finder / Windows Explorer)
-- Or type / paste the path directly into the text box
-- Click **Open Browser** to save and load your projects
+```bash
+# macOS
+./build.sh
 
-The path is stored in `data.json` and remembered on every subsequent launch. To point the app at a different folder later, click **📁 Change Folder** in the header at any time.
+# Windows
+build.bat
+```
+
+Output is placed in the `dist/` folder. The app bundles everything — no Python or browser installation needed to run it.
+
+---
+
+## First-time setup
+
+When you open the app for the first time, a setup screen will appear:
+
+1. **Select your DAW** — FL Studio or Ableton Live
+2. **Choose your projects folder** — click **Browse…** to open a native folder picker, or paste the path directly
+3. Click **Open Browser**
+
+Your DAW and folder are remembered on every subsequent launch. To change either, click **⚙ Settings** in the header at any time.
 
 ---
 
@@ -74,33 +85,28 @@ The path is stored in `data.json` and remembered on every subsequent launch. To 
 
 | Feature | How to use |
 |---|---|
-| **Easily view all projects** | All FL Studio project folders appear as cards on the board, arrange them however you like! |
-| **Open in FL Studio** | Click a project → click **Open in FL Studio** |
-| **Colour tag** | Click a card → pick a colour (for organising for purpose/genres/anything) |
-| **Star rating** | Is it a flop or an upcoming hit? You decide! |
+| **View all projects** | All project folders appear as cards on the board — arrange them however you like |
+| **Open in your DAW** | Click a project card → click **Open in FL Studio** / **Open in Ableton Live** |
+| **Colour tag** | Click a card → pick a colour (organise by genre, status, anything) |
+| **Star rating** | Rate each project 0–5 stars |
 | **Notes** | Write a note for each project (auto-saves) |
-| **Sticky notes** | For further organization |
-| **Hide a project** | Click a card → **Hide from project browser** at the bottom |
-| **Show hidden** | Click **Show Hidden** in the header to reveal hidden projects (and bring back any you no longer want hidden) |
+| **Sticky notes** | Free-floating notes on the canvas for extra organisation |
+| **Hide a project** | Click a card → **Hide from project browser** |
+| **Show hidden** | Click **Show Hidden** in the header to reveal hidden projects |
 | **Search** | Type in the search box to filter cards by name |
-| **Reset layout** | Click **Reset Layout** to snap all cards back to the default grid|
-| **Change folder** | Click **📁 Change Folder** in the header to pick a different projects directory |
+| **Reset layout** | Click **Reset Layout** to snap all cards back to a grid |
+| **Settings** | Click **⚙ Settings** to change DAW or projects folder |
+| **Load data backup** | Click **📂 Load Data** to restore a saved `data.json` |
 | **Light/dark mode** | Click the 🌙/☀️ button in the top-right corner |
 
 ---
 
 ## Data & Privacy
 
-Your project file metadata, ratings, notes, colours, and card positions are saved locally in `data.json` in the project folder. This file is excluded from git (via `.gitignore`) so your personal data is never committed or shared in case you cloned this repo. I don't (and have absolutely no way to) recieve any data from your projects.
-
----
-
-## Stopping the app
-
-Go back to the terminal / command prompt and press `Ctrl + C`, or simply close it.
+All project metadata — ratings, notes, colours, card positions — is saved locally in `data.json` in your user data folder (`~/Library/Application Support/DAW Project Browser/` on macOS). Nothing ever leaves your machine.
 
 ---
 
 ## Acknowledgement
 
-This was vibecoded and tested in the span of 30 minutes using Claude Code. This code is open source under the [GNU General Public License v3](LICENSE).
+Built by [Problem Industries](https://problem-industries.com). Open source under the [GNU General Public License v3](LICENSE).

@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
-  <title>FL Studio Project Browser</title>
+  <title>DAW Project Browser</title>
   <style>
     /* ── Theme tokens ─────────────────────────────────────── */
     :root {
@@ -183,6 +183,74 @@
       flex-shrink: 0;
     }
     #theme-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+    #about-btn {
+      background: none;
+      border: 1px solid var(--border-reset);
+      border-radius: 6px;
+      color: var(--text-reset);
+      font-size: 14px;
+      width: 32px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      flex-shrink: 0;
+    }
+    #about-btn:hover { color: var(--text); border-color: var(--text-dim); }
+
+    /* ── About modal ──────────────────────────────────────────── */
+    #about-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: var(--modal-overlay);
+      backdrop-filter: blur(6px);
+      z-index: 500;
+      align-items: center; justify-content: center;
+    }
+    #about-overlay.open { display: flex; }
+
+    #about-modal {
+      background: var(--bg-modal);
+      border: 1px solid var(--border-modal);
+      border-radius: 14px;
+      width: 620px;
+      padding: 36px 36px 32px;
+      position: relative;
+      animation: popIn 0.18s ease;
+      text-align: center;
+    }
+
+    #about-modal img {
+      width: 90%;
+      height: auto;
+      margin-bottom: 18px;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    #about-content {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.65;
+      margin-top: 14px;
+    }
+
+    #about-content a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    #about-content a:hover { text-decoration: underline; }
+
+    #about-close {
+      position: absolute; top: 14px; right: 14px;
+      background: var(--bg-close-btn); border: none;
+      color: var(--text-dim); font-size: 16px;
+      width: 28px; height: 28px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    #about-close:hover { background: var(--border-input); color: var(--text); }
 
     /* ── Canvas ───────────────────────────────────────────── */
     #canvas-wrap {
@@ -559,6 +627,40 @@
     #setup-save-btn:active { transform: scale(0.98); }
     #setup-save-btn:disabled { background: var(--open-disabled-bg); color: var(--open-disabled-color); cursor: not-allowed; transform: none; }
 
+    #daw-picker {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    .daw-opt {
+      flex: 1;
+      padding: 14px 10px;
+      border: 1.5px solid var(--border-input);
+      border-radius: 9px;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .daw-opt:hover { border-color: var(--accent); }
+    .daw-opt.active {
+      border-color: var(--accent);
+      background: rgba(255,108,0,0.07);
+    }
+    .daw-opt-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .daw-opt-ext {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+
+    #setup-folder-section { margin-top: 22px; }
+
     /* Toast */
     #toast {
       position: fixed; bottom: 28px; left: 50%;
@@ -575,13 +677,15 @@
 <body>
 
 <div id="header">
-  <h1>🎹 fl studio project browser</h1>
+  <h1>🎹 DAW Project Browser</h1>
   <input id="search" type="text" placeholder="Search projects…" autocomplete="off">
   <button class="hdr-btn" onclick="addSticky()">＋ Sticky Note</button>
   <button class="hdr-btn" id="show-hidden-btn" onclick="toggleShowHidden()">Show Hidden</button>
   <button class="hdr-btn" onclick="resetLayout()">Reset Layout</button>
-  <button class="hdr-btn" onclick="openSetup()" title="Change projects folder">📁 Change Folder</button>
+  <button class="hdr-btn" onclick="loadDataJson()" title="Load a saved data.json backup">📂 Load Data</button>
+  <button class="hdr-btn" onclick="openSetup()" title="Change DAW or projects folder">⚙ Settings</button>
   <span id="project-count"></span>
+  <button id="about-btn" onclick="openAbout()" title="About">ℹ</button>
   <button id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
 </div>
 
@@ -593,18 +697,31 @@
 <div id="setup-screen">
   <div id="setup-card">
     <span class="setup-emoji">🎹</span>
-    <h2>welcome to fl studio project browser</h2>
-    <p>To get started, point the app at your FL Studio Projects folder.<br>
-       The default location is pre-filled below — just click <strong>Open Browser</strong> if that looks right.</p>
+    <h2 id="setup-heading">welcome to daw project browser</h2>
+    <p id="setup-desc">Select your DAW, then point the app at your projects folder.</p>
 
-    <div class="setup-label">Projects Folder</div>
-    <div id="setup-path-row">
-      <input id="setup-path" type="text" placeholder="Path to your FL Studio Projects folder…" oninput="onSetupPathInput()">
-      <button id="setup-browse-btn" onclick="browseFolder()">Browse…</button>
+    <div class="setup-label">Your DAW</div>
+    <div id="daw-picker">
+      <div class="daw-opt" data-daw="fl_studio" onclick="selectDaw('fl_studio')">
+        <div class="daw-opt-name">FL Studio</div>
+        <div class="daw-opt-ext">.flp files</div>
+      </div>
+      <div class="daw-opt" data-daw="ableton" onclick="selectDaw('ableton')">
+        <div class="daw-opt-name">Ableton Live</div>
+        <div class="daw-opt-ext">.als files</div>
+      </div>
     </div>
-    <div id="setup-path-hint"></div>
 
-    <button id="setup-save-btn" onclick="saveFolder()" disabled>Open Browser</button>
+    <div id="setup-folder-section" style="display:none">
+      <div class="setup-label">Projects Folder</div>
+      <div id="setup-path-row">
+        <input id="setup-path" type="text" placeholder="Path to your projects folder…" oninput="onSetupPathInput()">
+        <button id="setup-browse-btn" onclick="browseFolder()">Browse…</button>
+      </div>
+      <div id="setup-path-hint"></div>
+
+      <button id="setup-save-btn" onclick="saveFolder()" disabled>Open Browser</button>
+    </div>
   </div>
 </div>
 
@@ -635,8 +752,36 @@
       <div id="modal-flps"></div>
     </div>
 
-    <button id="open-btn">Open in FL Studio</button>
+    <button id="open-btn">Open in DAW</button>
     <button id="hide-btn" onclick="toggleHideProject()"></button>
+  </div>
+</div>
+
+<!-- About modal -->
+<div id="about-overlay">
+  <div id="about-modal">
+    <button id="about-close" onclick="closeAbout()">✕</button>
+    <img src="/static/logo.svg" alt="Logo">
+
+    <div id="about-content">
+      <p><a href="https://problem-industries.com" target="_blank">problem-industries.com</a></p>
+
+      <p style="margin-top: 16px;">
+        Source code and builds available on<br>
+        <a href="https://github.com/problemindustries/Project-Browser" target="_blank">github.com/problemindustries/Project-Browser</a>
+      </p>
+
+      <p style="margin-top: 16px;">
+        Want to donate? Completely optional, much appreciated.<br>
+        PayPal: <a href="mailto:problem.industries@gmail.com">problem.industries@gmail.com</a>
+      </p>
+
+      <p style="margin-top: 16px;">
+        Bugs, feature suggestions, feedback<br>
+        <a href="mailto:problem.industries@gmail.com">problem.industries@gmail.com</a>
+      </p>
+    </div>
+
   </div>
 </div>
 
@@ -674,6 +819,9 @@
   let activeProject = null;
   let notesTimer = null;
   let showHidden = false;
+  let currentDaw = null;    // daw in use ('fl_studio' | 'ableton')
+  let selectedDaw = null;   // selection in the setup screen
+  let defaultDirs = {};     // { fl_studio: '...', ableton: '...' }
 
   // Drag (shared for cards + stickies)
   let dragEl = null, dragOffX = 0, dragOffY = 0;
@@ -694,13 +842,19 @@
     applyTheme(localStorage.getItem('theme') || 'dark');
 
     const config = await fetch('/api/config').then(r => r.json());
+    defaultDirs = config.default_dirs || {};
+
     if (!config.is_configured) {
-      openSetup(config.default_dir);
+      openSetup();
       return;
     }
 
+    currentDaw = config.daw;
+    updateDawUI();
     await loadProjects();
   }
+
+  function updateDawUI() {}
 
   async function loadProjects() {
     [projects, metadata] = await Promise.all([
@@ -712,11 +866,55 @@
   }
 
   // ── Setup screen ────────────────────────────────────────────
-  function openSetup(prefillPath) {
-    const pathEl = document.getElementById('setup-path');
-    if (prefillPath) pathEl.value = prefillPath;
-    onSetupPathInput();
+  function openSetup() {
+    const isFirstLaunch = !currentDaw;
+
+    // Set context-appropriate copy
+    document.getElementById('setup-heading').textContent = isFirstLaunch
+      ? 'welcome to daw project browser'
+      : 'settings';
+    document.getElementById('setup-desc').textContent = isFirstLaunch
+      ? 'Select your DAW, then point the app at your projects folder.'
+      : 'Change your DAW or projects folder. Your current settings are pre-filled below.';
+    document.getElementById('setup-save-btn').textContent = isFirstLaunch
+      ? 'Open Browser'
+      : 'Save Changes';
+
+    // Pre-select current DAW
+    selectedDaw = currentDaw;
+    document.querySelectorAll('.daw-opt').forEach(el => {
+      el.classList.toggle('active', el.dataset.daw === selectedDaw);
+    });
+
+    const folderSection = document.getElementById('setup-folder-section');
+    if (selectedDaw) {
+      folderSection.style.display = '';
+      const pathEl = document.getElementById('setup-path');
+      pathEl.value = (metadata && metadata._projects_dir) || defaultDirs[selectedDaw] || '';
+      onSetupPathInput();
+    } else {
+      folderSection.style.display = 'none';
+    }
+
     document.getElementById('setup-screen').classList.add('open');
+  }
+
+  function selectDaw(daw) {
+    selectedDaw = daw;
+    document.querySelectorAll('.daw-opt').forEach(el => {
+      el.classList.toggle('active', el.dataset.daw === daw);
+    });
+
+    const folderSection = document.getElementById('setup-folder-section');
+    folderSection.style.display = '';
+
+    const pathEl = document.getElementById('setup-path');
+    // Auto-fill default path if empty or currently showing another DAW's default
+    const isOtherDefault = Object.values(defaultDirs).includes(pathEl.value);
+    if (!pathEl.value || isOtherDefault) {
+      pathEl.value = defaultDirs[daw] || '';
+    }
+    onSetupPathInput();
   }
 
   function closeSetup() {
@@ -761,6 +959,10 @@
   }
 
   async function saveFolder() {
+    if (!selectedDaw) {
+      toast('Please select a DAW first');
+      return;
+    }
     const path = document.getElementById('setup-path').value.trim();
     const hint = document.getElementById('setup-path-hint');
     const btn  = document.getElementById('setup-save-btn');
@@ -770,12 +972,14 @@
     const r = await fetch('/api/config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projects_dir: path }),
+      body: JSON.stringify({ daw: selectedDaw, projects_dir: path }),
     });
     const data = await r.json();
 
     if (r.ok) {
-      hint.textContent = '✓ Folder saved';
+      currentDaw = selectedDaw;
+      updateDawUI();
+      hint.textContent = '✓ Saved';
       hint.className = 'ok';
       closeSetup();
       await loadProjects();
@@ -783,7 +987,7 @@
       hint.textContent = data.error || 'Invalid folder path';
       hint.className = 'error';
       btn.disabled = false;
-      btn.textContent = 'Open Browser';
+      btn.textContent = currentDaw ? 'Save Changes' : 'Open Browser';
     }
   }
 
@@ -869,7 +1073,7 @@
         <div class="card-stars">${miniStars(rating)}</div>
         ${date  ? `<div class="card-date">${date}</div>` : ''}
         ${notes ? `<div class="card-notes">${esc(notes)}</div>` : ''}
-        ${!project.main_flp ? '<div class="card-no-flp">No .flp file found</div>' : ''}
+        ${!project.main_flp ? `<div class="card-no-flp">No ${currentDaw === 'ableton' ? '.als' : '.flp'} file found</div>` : ''}
       </div>
     `;
     card.addEventListener('mousedown', e => startDrag(e, card, 'card'));
@@ -1134,6 +1338,7 @@
     }
 
     const btn = document.getElementById('open-btn');
+    btn.textContent = `Open in ${currentDaw === 'ableton' ? 'Ableton Live' : 'FL Studio'}`;
     btn.disabled = !activeProject.main_flp;
     btn.onclick = () => activeProject.main_flp && openFlp(activeProject.main_flp);
 
@@ -1227,7 +1432,38 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+  // ── About ──────────────────────────────────────────────────
+  function openAbout()  { document.getElementById('about-overlay').classList.add('open'); }
+  function closeAbout() { document.getElementById('about-overlay').classList.remove('open'); }
+  document.getElementById('about-overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('about-overlay')) closeAbout();
+  });
+
+  // ── Load data.json ─────────────────────────────────────────
+  async function loadDataJson() {
+    const btn = document.querySelector('[onclick="loadDataJson()"]');
+    btn.textContent = 'Opening…';
+    btn.disabled = true;
+    try {
+      const r = await fetch('/api/load-data', { method: 'POST' });
+      const result = await r.json();
+      if (r.ok) {
+        metadata = result.data;
+        renderCanvas();
+        updateCount();
+        toast('Data loaded successfully');
+      } else {
+        toast('Error: ' + (result.error || 'Could not load file'));
+      }
+    } catch (e) {
+      toast('Error loading data');
+    } finally {
+      btn.textContent = '📂 Load Data';
+      btn.disabled = false;
+    }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeAbout(); } });
 
   init();
 </script>

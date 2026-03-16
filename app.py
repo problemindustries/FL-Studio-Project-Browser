@@ -3,18 +3,56 @@ import json
 import os
 import platform
 import subprocess
+import sys
 import threading
 import time
-import webbrowser
 
 from flask import Flask, jsonify, render_template, request
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-app = Flask(__name__, template_folder=os.path.join(BASE_DIR, "templates"))
+# Resource directory — works both in dev and when frozen by PyInstaller
+if getattr(sys, "frozen", False):
+    RESOURCES_DIR = sys._MEIPASS
+else:
+    RESOURCES_DIR = os.path.dirname(os.path.abspath(__file__))
 
-DEFAULT_PROJECTS_DIR = os.path.expanduser("~/Documents/Image-Line/FL Studio/Projects")
-DATA_FILE = os.path.join(BASE_DIR, "data.json")
-SKIP_NAMES = {"Backup", "Templates"}
+# User data directory — persists across app updates
+_system = platform.system()
+if _system == "Darwin":
+    _data_base = os.path.expanduser("~/Library/Application Support")
+elif _system == "Windows":
+    _data_base = os.environ.get("APPDATA", os.path.expanduser("~"))
+else:
+    _data_base = os.path.expanduser("~/.config")
+
+DATA_DIR = os.path.join(_data_base, "DAW Project Browser")
+os.makedirs(DATA_DIR, exist_ok=True)
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(RESOURCES_DIR, "templates"),
+    static_folder=os.path.join(RESOURCES_DIR, "static"),
+)
+
+DATA_FILE = os.path.join(DATA_DIR, "data.json")
+
+_sys = platform.system()
+DAW_CONFIGS = {
+    "fl_studio": {
+        "label": "FL Studio",
+        "ext": "*.flp",
+        "skip": {"Backup", "Templates"},
+        "default_dir": os.path.expanduser("~/Documents/Image-Line/FL Studio/Projects"),
+    },
+    "ableton": {
+        "label": "Ableton Live",
+        "ext": "*.als",
+        "skip": {"Backup", "Templates", "Samples"},
+        "default_dir": os.path.expanduser(
+            "~/Music/Ableton/Projects" if _sys == "Darwin"
+            else "~/Documents/Ableton/Projects"
+        ),
+    },
+}
 
 
 def load_data():
@@ -29,15 +67,16 @@ def save_data(data):
         json.dump(data, f, indent=2)
 
 
-def get_projects_dir():
-    return load_data().get("_projects_dir", None)
+def get_daw():
+    return load_data().get("_daw", "fl_studio")
 
 
-def get_flps(folder):
-    """Return .flp files in the project root (not Backup), newest first."""
-    flps = glob.glob(os.path.join(folder, "*.flp"))
-    flps.sort(key=os.path.getmtime, reverse=True)
-    return flps
+def get_project_files(folder, daw):
+    """Return project files (.flp or .als) in the folder, newest first."""
+    ext = DAW_CONFIGS.get(daw, DAW_CONFIGS["fl_studio"])["ext"]
+    files = glob.glob(os.path.join(folder, ext))
+    files.sort(key=os.path.getmtime, reverse=True)
+    return files
 
 
 @app.route("/")
@@ -47,20 +86,27 @@ def index():
 
 @app.route("/api/config", methods=["GET"])
 def api_get_config():
-    projects_dir = get_projects_dir()
+    data = load_data()
+    daw = data.get("_daw", None)
+    projects_dir = data.get("_projects_dir", None)
     return jsonify({
+        "daw": daw,
         "projects_dir": projects_dir,
-        "is_configured": projects_dir is not None,
-        "default_dir": DEFAULT_PROJECTS_DIR,
+        "is_configured": daw is not None and projects_dir is not None,
+        "default_dirs": {k: v["default_dir"] for k, v in DAW_CONFIGS.items()},
     })
 
 
 @app.route("/api/config", methods=["POST"])
 def api_set_config():
+    daw = request.json.get("daw", "").strip()
     projects_dir = request.json.get("projects_dir", "").strip()
+    if daw not in DAW_CONFIGS:
+        return jsonify({"error": "Invalid DAW selection"}), 400
     if not projects_dir or not os.path.isdir(projects_dir):
         return jsonify({"error": "Invalid or missing folder path"}), 400
     data = load_data()
+    data["_daw"] = daw
     data["_projects_dir"] = projects_dir
     save_data(data)
     return jsonify({"ok": True})
@@ -105,26 +151,29 @@ def api_browse():
 
 @app.route("/api/projects")
 def api_projects():
-    projects_dir = get_projects_dir()
+    store = load_data()
+    projects_dir = store.get("_projects_dir")
+    daw = store.get("_daw", "fl_studio")
     if not projects_dir or not os.path.exists(projects_dir):
         return jsonify([])
 
+    skip = DAW_CONFIGS.get(daw, DAW_CONFIGS["fl_studio"])["skip"]
     projects = []
     for name in sorted(os.listdir(projects_dir)):
-        if name in SKIP_NAMES or name.startswith("."):
+        if name in skip or name.startswith("."):
             continue
         folder = os.path.join(projects_dir, name)
         if not os.path.isdir(folder):
             continue
 
-        flps = get_flps(folder)
-        main_flp = flps[0] if flps else None
-        mtime = os.path.getmtime(main_flp) if main_flp else None
+        files = get_project_files(folder, daw)
+        main_file = files[0] if files else None
+        mtime = os.path.getmtime(main_file) if main_file else None
 
         projects.append({
             "name": name,
-            "main_flp": main_flp,
-            "flps": flps,
+            "main_flp": main_file,
+            "flps": files,
             "mtime": mtime,
         })
 
@@ -140,6 +189,51 @@ def api_get_metadata():
 def api_set_metadata():
     save_data(request.json)
     return jsonify({"ok": True})
+
+
+@app.route("/api/load-data", methods=["POST"])
+def api_load_data():
+    """Open a native file picker, read the selected JSON, save it as current metadata."""
+    system = platform.system()
+    try:
+        if system == "Darwin":
+            result = subprocess.run(
+                ["osascript", "-e",
+                 'POSIX path of (choose file with prompt "Select your data.json backup")'],
+                capture_output=True, text=True, timeout=60,
+            )
+            path = result.stdout.strip()
+        elif system == "Windows":
+            ps = (
+                "Add-Type -AssemblyName System.Windows.Forms;"
+                "$d = New-Object System.Windows.Forms.OpenFileDialog;"
+                "$d.Filter = 'JSON files (*.json)|*.json|All files (*.*)|*.*';"
+                "$d.Title = 'Select your data.json backup';"
+                "if ($d.ShowDialog() -eq 'OK') { Write-Output $d.FileName }"
+            )
+            result = subprocess.run(
+                ["powershell", "-Command", ps],
+                capture_output=True, text=True, timeout=60,
+            )
+            path = result.stdout.strip()
+        else:
+            return jsonify({"error": "Unsupported platform for native picker"}), 400
+
+        if not path or not os.path.isfile(path):
+            return jsonify({"error": "No file selected"}), 400
+
+        with open(path) as f:
+            data = json.load(f)
+
+        save_data(data)
+        return jsonify({"ok": True, "data": data})
+
+    except json.JSONDecodeError:
+        return jsonify({"error": "Selected file is not valid JSON"}), 400
+    except subprocess.TimeoutExpired:
+        return jsonify({"error": "Picker timed out"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/open", methods=["POST"])
@@ -158,9 +252,21 @@ def api_open():
 
 
 if __name__ == "__main__":
-    def open_browser():
-        time.sleep(0.8)
-        webbrowser.open("http://localhost:8765")
+    import webview
 
-    threading.Thread(target=open_browser, daemon=True).start()
-    app.run(debug=True, port=8765, use_reloader=False)
+    # Flask runs in a background thread; pywebview owns the main thread
+    flask_thread = threading.Thread(
+        target=lambda: app.run(debug=False, port=8765, use_reloader=False),
+        daemon=True,
+    )
+    flask_thread.start()
+    time.sleep(0.6)  # Give Flask a moment to start
+
+    window = webview.create_window(
+        "DAW Project Browser",
+        "http://localhost:8765",
+        width=1400,
+        height=900,
+        min_size=(900, 600),
+    )
+    webview.start()
