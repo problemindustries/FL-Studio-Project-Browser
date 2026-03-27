@@ -18,17 +18,15 @@ pip install -q -r requirements.txt
 echo "Building app..."
 pyinstaller \
     --windowed \
-    --name "DAW Project Browser" \
+    --name "DAW Companion" \
+    --osx-bundle-identifier "com.dawcompanion.app" \
     --add-data "templates:templates" \
     --add-data "static:static" \
     --hidden-import=webview \
     --hidden-import=webview.platforms.cocoa \
-    --hidden-import=flask \
-    --hidden-import=werkzeug \
-    --hidden-import=jinja2 \
     --noconfirm \
     app.py
 
 echo ""
-echo "Done! App bundle is at: dist/DAW Project Browser.app"
-echo "To distribute, zip the .app or copy it to /Applications."
+echo "Done! App bundle is at: dist/DAW Companion.app"
+echo "To install, drag dist/DAW Companion.app to your /Applications folder."

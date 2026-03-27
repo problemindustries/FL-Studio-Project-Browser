@@ -1,96 +1,102 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
-  <title>DAW Project Browser</title>
+  <title>DAW Companion</title>
   <style>
     /* ── Theme tokens ─────────────────────────────────────── */
     :root {
-      --bg:              #0f0f0f;
-      --bg-header:       #161616;
-      --bg-card:         #1a1a1a;
-      --bg-modal:        #1a1a1a;
-      --bg-input:        #222222;
-      --bg-input-deep:   #141414;
-      --bg-flp-row:      #141414;
-      --bg-close-btn:    #252525;
+      --bg:              #f4f1ea;
+      --bg-header:       #faf8f3;
+      --bg-card:         #faf8f3;
+      --bg-modal:        #faf8f3;
+      --bg-input:        transparent;
+      --bg-input-deep:   transparent;
+      --bg-flp-row:      #f4f1ea;
+      --bg-close-btn:    #ece8de;
 
-      --border:          #262626;
-      --border-card:     #2a2a2a;
-      --border-card-hover: #3a3a3a;
-      --border-input:    #333333;
-      --border-modal:    #2e2e2e;
-      --border-flp-row:  #252525;
-      --border-reset:    #333333;
+      --border:          #d6d0c4;
+      --border-card:     #d6d0c4;
+      --border-card-hover: #a8a296;
+      --border-input:    #c8c2b4;
+      --border-modal:    #d6d0c4;
+      --border-flp-row:  #d6d0c4;
+      --border-reset:    #c8c2b4;
 
-      --text:            #eeeeee;
-      --text-dim:        #555555;
-      --text-card-title: #f0f0f0;
-      --text-card-date:  #444444;
-      --text-card-notes: #666666;
-      --text-modal-title:#ffffff;
-      --text-input:      #dddddd;
-      --text-flp:        #cccccc;
-      --text-reset:      #777777;
-      --text-label:      #555555;
+      --text:            #2c2820;
+      --text-dim:        #9a9288;
+      --text-card-title: #2c2820;
+      --text-card-date:  #a8a298;
+      --text-card-notes: #6e6860;
+      --text-modal-title:#1c1810;
+      --text-input:      #2c2820;
+      --text-flp:        #3c3830;
+      --text-reset:      #9a9288;
+      --text-label:      #b0aa9e;
 
-      --star-off:        #2e2e2e;
-      --canvas-dot:      #1e1e1e;
-      --shadow-card:     rgba(0,0,0,0.6);
-      --shadow-drag:     rgba(0,0,0,0.8);
-      --modal-overlay:   rgba(0,0,0,0.75);
+      --star-off:        #d6d0c4;
+      --canvas-dot:      #ccc8bc;
+      --shadow-card:     rgba(44,36,24,0.07);
+      --shadow-drag:     rgba(44,36,24,0.16);
+      --modal-overlay:   rgba(44,36,24,0.35);
 
-      --toast-bg:        #222222;
-      --toast-border:    #333333;
-      --toast-text:      #eeeeee;
+      --toast-bg:        #faf8f3;
+      --toast-border:    #d6d0c4;
+      --toast-text:      #2c2820;
 
-      --open-disabled-bg:    #2e2e2e;
-      --open-disabled-color: #555555;
+      --open-disabled-bg:    #e8e4da;
+      --open-disabled-color: #b0aa9e;
 
-      --accent: #ff6c00;
+      --accent:          #6b8f71;
+      --accent-hover:    #5a7d60;
+
+      --font-mono: ui-monospace, 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
     }
 
-    [data-theme="light"] {
-      --bg:              #f0f0f0;
-      --bg-header:       #ffffff;
-      --bg-card:         #ffffff;
-      --bg-modal:        #ffffff;
-      --bg-input:        #f5f5f5;
-      --bg-input-deep:   #efefef;
-      --bg-flp-row:      #f5f5f5;
-      --bg-close-btn:    #eeeeee;
+    [data-theme="dark"] {
+      --bg:              #1c1a15;
+      --bg-header:       #222018;
+      --bg-card:         #252219;
+      --bg-modal:        #252219;
+      --bg-input:        transparent;
+      --bg-input-deep:   transparent;
+      --bg-flp-row:      #1c1a15;
+      --bg-close-btn:    #2e2b20;
 
-      --border:          #e0e0e0;
-      --border-card:     #e4e4e4;
-      --border-card-hover: #bbb;
-      --border-input:    #d0d0d0;
-      --border-modal:    #e0e0e0;
-      --border-flp-row:  #e4e4e4;
-      --border-reset:    #d0d0d0;
+      --border:          #373320;
+      --border-card:     #373320;
+      --border-card-hover: #504c38;
+      --border-input:    #3e3a28;
+      --border-modal:    #373320;
+      --border-flp-row:  #373320;
+      --border-reset:    #3e3a28;
 
-      --text:            #1a1a1a;
-      --text-dim:        #999999;
-      --text-card-title: #1a1a1a;
-      --text-card-date:  #aaaaaa;
-      --text-card-notes: #777777;
-      --text-modal-title:#111111;
-      --text-input:      #333333;
-      --text-flp:        #444444;
-      --text-reset:      #888888;
-      --text-label:      #999999;
+      --text:            #d8d3c8;
+      --text-dim:        #685e50;
+      --text-card-title: #d8d3c8;
+      --text-card-date:  #5a5648;
+      --text-card-notes: #7a7468;
+      --text-modal-title:#e4dfd4;
+      --text-input:      #d8d3c8;
+      --text-flp:        #b8b2a8;
+      --text-reset:      #685e50;
+      --text-label:      #4e4a38;
 
-      --star-off:        #ddd;
-      --canvas-dot:      #d8d8d8;
-      --shadow-card:     rgba(0,0,0,0.1);
-      --shadow-drag:     rgba(0,0,0,0.2);
-      --modal-overlay:   rgba(0,0,0,0.4);
+      --star-off:        #373320;
+      --canvas-dot:      #2a2820;
+      --shadow-card:     rgba(0,0,0,0.4);
+      --shadow-drag:     rgba(0,0,0,0.6);
+      --modal-overlay:   rgba(0,0,0,0.6);
 
-      --toast-bg:        #ffffff;
-      --toast-border:    #e0e0e0;
-      --toast-text:      #1a1a1a;
+      --toast-bg:        #252219;
+      --toast-border:    #373320;
+      --toast-text:      #d8d3c8;
 
-      --open-disabled-bg:    #e0e0e0;
-      --open-disabled-color: #aaaaaa;
+      --open-disabled-bg:    #2e2b20;
+      --open-disabled-color: #4e4a38;
+
+      --accent:          #7a9e80;
+      --accent-hover:    #6a8e70;
     }
 
     /* ── Reset ────────────────────────────────────────────── */
@@ -109,7 +115,7 @@
     #header {
       position: fixed;
       top: 0; left: 0; right: 0;
-      height: 54px;
+      height: 64px;
       background: var(--bg-header);
       border-bottom: 1px solid var(--border);
       display: flex;
@@ -130,25 +136,53 @@
     }
 
     #search {
-      background: var(--bg-input);
-      border: 1px solid var(--border-input);
-      border-radius: 6px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border-input);
+      border-radius: 0;
       color: var(--text);
-      padding: 6px 12px;
+      padding: 6px 24px 6px 4px;
       font-size: 13px;
       width: 200px;
       outline: none;
-      transition: border-color 0.15s, background 0.2s;
+      transition: border-color 0.15s;
     }
     #search::placeholder { color: var(--text-dim); }
     #search:focus { border-color: var(--accent); }
 
+    #app-logo {
+      height: 36px;
+      width: auto;
+      flex-shrink: 0;
+    }
+
     #project-count {
       font-size: 12px;
+      font-family: var(--font-mono);
       color: var(--text-dim);
-      margin-left: auto;
       white-space: nowrap;
+      flex-shrink: 0;
     }
+
+    #search-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    #search-clear {
+      position: absolute;
+      right: 2px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 16px;
+      line-height: 1;
+      padding: 2px 5px;
+      cursor: pointer;
+      display: none;
+      transition: color 0.15s;
+    }
+    #search-clear:hover { color: var(--text); }
 
     .hdr-btn {
       background: none;
@@ -181,22 +215,9 @@
       cursor: pointer;
       transition: color 0.15s, border-color 0.15s;
       flex-shrink: 0;
+      margin-left: auto;
     }
     #theme-btn:hover { color: var(--text); border-color: var(--text-dim); }
-
-    #about-btn {
-      background: none;
-      border: 1px solid var(--border-reset);
-      border-radius: 6px;
-      color: var(--text-reset);
-      font-size: 14px;
-      width: 32px; height: 30px;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      transition: color 0.15s, border-color 0.15s;
-      flex-shrink: 0;
-    }
-    #about-btn:hover { color: var(--text); border-color: var(--text-dim); }
 
     /* ── About modal ──────────────────────────────────────────── */
     #about-overlay {
@@ -255,18 +276,28 @@
     /* ── Canvas ───────────────────────────────────────────── */
     #canvas-wrap {
       position: fixed;
-      top: 54px; left: 0; right: 0; bottom: 0;
-      overflow: auto;
+      top: 64px; left: 0; right: 0; bottom: 0;
+      overflow: scroll;
       background: var(--bg);
       background-image: radial-gradient(var(--canvas-dot) 1px, transparent 1px);
       background-size: 28px 28px;
       transition: background-color 0.2s;
     }
 
+    #canvas-wrap::-webkit-scrollbar { width: 8px; height: 8px; }
+    #canvas-wrap::-webkit-scrollbar-track { background: transparent; }
+    #canvas-wrap::-webkit-scrollbar-thumb {
+      background: var(--border-card-hover);
+      border-radius: 4px;
+      border: 2px solid var(--bg);
+    }
+    #canvas-wrap::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+    #canvas-wrap::-webkit-scrollbar-corner { background: var(--bg); }
+
     #canvas {
       position: relative;
-      width: 5000px;
-      height: 4000px;
+      min-width: 100%;
+      min-height: 100%;
     }
 
     /* ── Project Cards ────────────────────────────────────── */
@@ -276,6 +307,7 @@
       background: var(--bg-card);
       border-radius: 8px;
       border: 1px solid var(--border-card);
+      box-shadow: 0 1px 4px var(--shadow-card);
       cursor: pointer;
       user-select: none;
       transition: box-shadow 0.15s, border-color 0.15s, background 0.2s, opacity 0.2s;
@@ -283,7 +315,7 @@
     }
     .card:hover {
       border-color: var(--border-card-hover);
-      box-shadow: 0 6px 24px var(--shadow-card);
+      box-shadow: 0 4px 16px var(--shadow-card);
     }
     .card.dragging {
       box-shadow: 0 12px 48px var(--shadow-drag);
@@ -323,12 +355,12 @@
     .star.interactive:hover,
     .star.interactive.preview { color: #ffc107; }
 
-    .card-date { font-size: 10px; color: var(--text-card-date); margin-top: 3px; }
+    .card-date { font-size: 10px; font-family: var(--font-mono); color: var(--text-card-date); margin-top: 3px; }
     .card-notes {
       font-size: 11px; color: var(--text-card-notes);
       margin-top: 7px; line-height: 1.5;
       overflow: hidden; display: -webkit-box;
-      -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3; line-clamp: 3; -webkit-box-orient: vertical;
     }
     .card-no-flp { font-size: 10px; color: #c0392b; margin-top: 5px; }
 
@@ -487,11 +519,11 @@
     }
 
     #modal-notes {
-      width: 100%; background: var(--bg-input-deep);
-      border: 1px solid var(--border-modal); border-radius: 7px;
-      color: var(--text-input); padding: 10px 12px; font-size: 13px;
-      font-family: inherit; resize: vertical; min-height: 90px;
-      outline: none; line-height: 1.55; transition: border-color 0.15s, background 0.2s;
+      width: 100%; background: transparent;
+      border: none; border-bottom: 1px solid var(--border-modal); border-radius: 0;
+      color: var(--text-input); padding: 10px 0; font-size: 13px;
+      font-family: inherit; resize: none; min-height: 90px;
+      outline: none; line-height: 1.65; transition: border-color 0.15s;
     }
     #modal-notes:focus { border-color: var(--accent); }
     #modal-notes::placeholder { color: var(--text-dim); }
@@ -499,15 +531,16 @@
     #modal-flps { display: flex; flex-direction: column; gap: 6px; }
     .flp-row {
       display: flex; align-items: center; gap: 10px;
-      padding: 9px 12px;
-      background: var(--bg-flp-row); border: 1px solid var(--border-flp-row);
-      border-radius: 7px; cursor: pointer;
-      transition: border-color 0.15s, background 0.15s;
+      padding: 9px 4px;
+      background: transparent; border: none;
+      border-bottom: 1px solid var(--border-flp-row);
+      border-radius: 0; cursor: pointer;
+      transition: color 0.15s;
     }
-    .flp-row:hover { background: var(--bg-input); border-color: var(--accent); }
-    .flp-icon { font-size: 15px; flex-shrink: 0; }
+    .flp-row:last-child { border-bottom: none; }
+    .flp-row:hover { color: var(--accent); }
     .flp-name {
-      flex: 1; font-size: 12px; color: var(--text-flp);
+      flex: 1; font-size: 12px; font-family: var(--font-mono); color: var(--text-flp);
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
 
@@ -517,7 +550,7 @@
       cursor: pointer; letter-spacing: 0.3px;
       transition: background 0.15s, transform 0.1s; margin-top: 6px;
     }
-    #open-btn:hover { background: #ff7f1f; }
+    #open-btn:hover { background: var(--accent-hover); }
     #open-btn:active { transform: scale(0.98); }
     #open-btn:disabled { background: var(--open-disabled-bg); color: var(--open-disabled-color); cursor: not-allowed; transform: none; }
 
@@ -551,12 +584,6 @@
       animation: popIn 0.2s ease;
     }
 
-    #setup-card .setup-emoji {
-      font-size: 40px;
-      display: block;
-      margin-bottom: 18px;
-    }
-
     #setup-card h2 {
       font-size: 22px;
       font-weight: 700;
@@ -582,15 +609,16 @@
 
     #setup-path {
       flex: 1;
-      background: var(--bg-input-deep);
-      border: 1px solid var(--border-input);
-      border-radius: 7px;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border-input);
+      border-radius: 0;
       color: var(--text-input);
-      padding: 9px 12px;
+      padding: 9px 4px;
       font-size: 13px;
-      font-family: inherit;
+      font-family: var(--font-mono);
       outline: none;
-      transition: border-color 0.15s, background 0.2s;
+      transition: border-color 0.15s;
     }
     #setup-path:focus { border-color: var(--accent); }
 
@@ -623,7 +651,7 @@
       font-size: 14px; font-weight: 700; cursor: pointer;
       transition: background 0.15s, transform 0.1s;
     }
-    #setup-save-btn:hover { background: #ff7f1f; }
+    #setup-save-btn:hover { background: var(--accent-hover); }
     #setup-save-btn:active { transform: scale(0.98); }
     #setup-save-btn:disabled { background: var(--open-disabled-bg); color: var(--open-disabled-color); cursor: not-allowed; transform: none; }
 
@@ -677,15 +705,18 @@
 <body>
 
 <div id="header">
-  <h1>🎹 DAW Project Browser</h1>
-  <input id="search" type="text" placeholder="Search projects…" autocomplete="off">
-  <button class="hdr-btn" onclick="addSticky()">＋ Sticky Note</button>
+  <img id="app-logo" src="../static/logo_light.svg" alt="DAW Companion">
+  <span id="project-count"></span>
+  <div id="search-wrap">
+    <input id="search" type="text" placeholder="Search projects…" autocomplete="off">
+    <button id="search-clear" onclick="clearSearch()" title="Clear">×</button>
+  </div>
+  <button class="hdr-btn" onclick="addSticky()">+ Sticky Note</button>
   <button class="hdr-btn" id="show-hidden-btn" onclick="toggleShowHidden()">Show Hidden</button>
   <button class="hdr-btn" onclick="resetLayout()">Reset Layout</button>
-  <button class="hdr-btn" onclick="loadDataJson()" title="Load a saved data.json backup">📂 Load Data</button>
-  <button class="hdr-btn" onclick="openSetup()" title="Change DAW or projects folder">⚙ Settings</button>
-  <span id="project-count"></span>
-  <button id="about-btn" onclick="openAbout()" title="About">ℹ</button>
+  <button class="hdr-btn" onclick="loadDataJson()" title="Load a saved data.json backup">Load Data</button>
+  <button class="hdr-btn" onclick="openSetup()" title="Change DAW or projects folder">Settings</button>
+  <button class="hdr-btn" id="about-btn" onclick="openAbout()">About App</button>
   <button id="theme-btn" onclick="toggleTheme()" title="Toggle light/dark mode">🌙</button>
 </div>
 
@@ -696,8 +727,7 @@
 <!-- Setup screen -->
 <div id="setup-screen">
   <div id="setup-card">
-    <span class="setup-emoji">🎹</span>
-    <h2 id="setup-heading">welcome to daw project browser</h2>
+    <h2 id="setup-heading">welcome to daw companion</h2>
     <p id="setup-desc">Select your DAW, then point the app at your projects folder.</p>
 
     <div class="setup-label">Your DAW</div>
@@ -761,7 +791,7 @@
 <div id="about-overlay">
   <div id="about-modal">
     <button id="about-close" onclick="closeAbout()">✕</button>
-    <img src="/static/logo.svg" alt="Logo">
+    <img src="../static/logo.svg" alt="Logo">
 
     <div id="about-content">
       <p><a href="https://problem-industries.com" target="_blank">problem-industries.com</a></p>
@@ -830,7 +860,10 @@
   // ── Theme ──────────────────────────────────────────────────
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
-    document.getElementById('theme-btn').textContent = theme === 'dark' ? '🌙' : '☀️';
+    document.getElementById('theme-btn').textContent = theme === 'dark' ? '☀️' : '🌙';
+    document.getElementById('app-logo').src = theme === 'dark'
+      ? '../static/logo_dark.svg'
+      : '../static/logo_light.svg';
     localStorage.setItem('theme', theme);
   }
   function toggleTheme() {
@@ -839,9 +872,9 @@
 
   // ── Init ───────────────────────────────────────────────────
   async function init() {
-    applyTheme(localStorage.getItem('theme') || 'dark');
+    applyTheme(localStorage.getItem('theme') || 'light');
 
-    const config = await fetch('/api/config').then(r => r.json());
+    const config = await window.pywebview.api.get_config();
     defaultDirs = config.default_dirs || {};
 
     if (!config.is_configured) {
@@ -858,8 +891,8 @@
 
   async function loadProjects() {
     [projects, metadata] = await Promise.all([
-      fetch('/api/projects').then(r => r.json()),
-      fetch('/api/metadata').then(r => r.json()),
+      window.pywebview.api.get_projects(),
+      window.pywebview.api.get_metadata(),
     ]);
     renderCanvas();
     updateCount();
@@ -871,7 +904,7 @@
 
     // Set context-appropriate copy
     document.getElementById('setup-heading').textContent = isFirstLaunch
-      ? 'welcome to daw project browser'
+      ? 'welcome to daw companion'
       : 'settings';
     document.getElementById('setup-desc').textContent = isFirstLaunch
       ? 'Select your DAW, then point the app at your projects folder.'
@@ -942,13 +975,10 @@
     btn.textContent = 'Opening…';
     btn.disabled = true;
     try {
-      const r = await fetch('/api/browse', { method: 'POST' });
-      const data = await r.json();
+      const data = await window.pywebview.api.browse_folder();
       if (data.path) {
         document.getElementById('setup-path').value = data.path;
         onSetupPathInput();
-      } else {
-        // User cancelled — that's fine
       }
     } catch (e) {
       toast('Could not open folder picker');
@@ -969,14 +999,9 @@
     btn.disabled = true;
     btn.textContent = 'Saving…';
 
-    const r = await fetch('/api/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ daw: selectedDaw, projects_dir: path }),
-    });
-    const data = await r.json();
+    const data = await window.pywebview.api.set_config(selectedDaw, path);
 
-    if (r.ok) {
+    if (data.ok) {
       currentDaw = selectedDaw;
       updateDawUI();
       hint.textContent = '✓ Saved';
@@ -998,11 +1023,7 @@
     saveMeta();
   }
   async function saveMeta() {
-    await fetch('/api/metadata', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(metadata),
-    });
+    await window.pywebview.api.set_metadata(metadata);
   }
 
   // ── Stickies store ─────────────────────────────────────────
@@ -1026,12 +1047,32 @@
     renderCanvas();
   }
 
+  // ── Canvas sizing ──────────────────────────────────────────
+  function fitCanvas() {
+    requestAnimationFrame(() => {
+      const wrap   = document.getElementById('canvas-wrap');
+      const canvas = document.getElementById('canvas');
+      const EXTRA  = 360;
+      let maxX = 0, maxY = 0;
+      document.querySelectorAll('.card, .sticky').forEach(el => {
+        if (el.style.display === 'none') return;
+        const x = parseInt(el.style.left) || 0;
+        const y = parseInt(el.style.top)  || 0;
+        maxX = Math.max(maxX, x + (el.offsetWidth  || CARD_W));
+        maxY = Math.max(maxY, y + (el.offsetHeight || CARD_H));
+      });
+      canvas.style.width  = Math.max(wrap.clientWidth,  maxX + EXTRA) + 'px';
+      canvas.style.height = Math.max(wrap.clientHeight, maxY + EXTRA) + 'px';
+    });
+  }
+
   // ── Render all ─────────────────────────────────────────────
   function renderCanvas() {
     const canvas = document.getElementById('canvas');
     canvas.innerHTML = '';
     projects.forEach((p, i) => canvas.appendChild(buildCard(p, i)));
     getStickies().forEach(s => canvas.appendChild(buildSticky(s)));
+    fitCanvas();
   }
 
   // ── Show hidden toggle ─────────────────────────────────────
@@ -1253,10 +1294,12 @@
     dragEl = null;
     dragType = null;
     didDrag = false;
+    fitCanvas();
   });
 
   // ── Search ─────────────────────────────────────────────────
   document.getElementById('search').addEventListener('input', function () {
+    document.getElementById('search-clear').style.display = this.value ? 'block' : 'none';
     const q = this.value.trim().toLowerCase();
     let count = 0;
     document.querySelectorAll('.card').forEach(c => {
@@ -1269,6 +1312,14 @@
     document.getElementById('project-count').textContent =
       `${count} project${count !== 1 ? 's' : ''}`;
   });
+
+  function clearSearch() {
+    const input = document.getElementById('search');
+    input.value = '';
+    document.getElementById('search-clear').style.display = 'none';
+    input.dispatchEvent(new Event('input'));
+    input.focus();
+  }
 
   function updateCount() {
     const visible = projects.filter(p => showHidden ? true : !getMeta(p.name).hidden).length;
@@ -1329,7 +1380,7 @@
       activeProject.flps.forEach(flp => {
         const row = document.createElement('div');
         row.className = 'flp-row';
-        row.innerHTML = `<span class="flp-icon">🎵</span><span class="flp-name">${esc(flp.split('/').pop())}</span>`;
+        row.innerHTML = `<span class="flp-name">${esc(flp.split('/').pop())}</span>`;
         row.addEventListener('click', () => openFlp(flp));
         flpsEl.appendChild(row);
       });
@@ -1403,12 +1454,8 @@
 
   // ── Open FL ────────────────────────────────────────────────
   async function openFlp(path) {
-    const r = await fetch('/api/open', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path }),
-    });
-    toast(r.ok ? 'Opening in FL Studio…' : 'Error: file not found');
+    const r = await window.pywebview.api.open_file(path);
+    toast(r.ok ? 'Opening in DAW…' : 'Error: file not found');
   }
 
   // ── Toast ──────────────────────────────────────────────────
@@ -1445,9 +1492,8 @@
     btn.textContent = 'Opening…';
     btn.disabled = true;
     try {
-      const r = await fetch('/api/load-data', { method: 'POST' });
-      const result = await r.json();
-      if (r.ok) {
+      const result = await window.pywebview.api.load_data_file();
+      if (result.ok) {
         metadata = result.data;
         renderCanvas();
         updateCount();
@@ -1465,7 +1511,11 @@
 
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeAbout(); } });
 
-  init();
+  if (window.pywebview) {
+    init();
+  } else {
+    window.addEventListener('pywebviewready', init);
+  }
 </script>
 </body>
 </html>
